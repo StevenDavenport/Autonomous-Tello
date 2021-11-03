@@ -15,6 +15,7 @@ class DroneController:
         
         
     def test_drone_movement(self):
+        print(self.tello.get_battery())
         self.tello.takeoff()
         self.tello.rotate_clockwise(50)
         self.tello.land()
