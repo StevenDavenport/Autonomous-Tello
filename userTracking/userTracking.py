@@ -16,3 +16,7 @@ class UserTracking:
     def __init__(self) -> None:
         self.Detection = ObjectDetection()
         self.Tracking = ObjectTracking()
+
+
+    def predict(self, frame):
+        return self.Detection.predict(frame) 
