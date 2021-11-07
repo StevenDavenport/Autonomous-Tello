@@ -1,0 +1,2 @@
+-get yolov5 working and dispaying bboxes to screen with cv2
+    -investigate yolov5's '.show()' function
