@@ -13,7 +13,7 @@ def main():
     drone.connect()
 
     # Create user tracking object
-    track = UserTracking()
+    tracker = UserTracking()
 
     # Video loop
     while True:
@@ -24,22 +24,18 @@ def main():
         frame = drone.get_frame()
 
         # Object detection on the frame
-        tracked_frame = track.predict(frame)
-        tracked_frame.show()
-
-        # FPS Calculations
-        # Display FPS
-        '''
+        tracked_frame = tracker.track(frame)
+        
+        # FPS Calculations & Display
         fps = 1.0 / (time.time() - start_time)
         fps_string = 'FPS: ' + str(int(fps))
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(tracked_frame, fps_string, (800, 80), font, 1, (0, 102, 34), 2, cv2.LINE_AA)
+        cv2.putText(frame, fps_string, (800, 80), font, 1, (0, 102, 34), 2, cv2.LINE_AA)
 
         # Display Frame 
-        cv2.imshow('Drone Vision', tracked_frame)
+        cv2.imshow('Drone Vision', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        '''
     
     # Close the viewing window
     cv2.destroyAllWindows()

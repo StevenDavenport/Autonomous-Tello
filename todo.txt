@@ -1,2 +1,5 @@
 -get yolov5 working and dispaying bboxes to screen with cv2
     -investigate yolov5's '.show()' function
+
+    - investigating def display in yolov5/common.py
+    - looking into wiriting a similar function in usertracking class, that main can use

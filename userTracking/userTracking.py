@@ -4,19 +4,28 @@ This module relies on an object detection system as well as a
 tracking system.
 '''
 
-# Object detection module imports
-from userTracking.objectDetection import ObjectDetection
+from userTracking.objectDetection.objectDetection import ObjectDetector
+from userTracking.objectTracking.objectTracking import ObjectTracker
 
-# Object tracking module imports 
-from userTracking.objectTracking import ObjectTracking
-
+import cv2
 
 
 class UserTracking:
     def __init__(self) -> None:
-        self.Detection = ObjectDetection()
-        self.Tracking = ObjectTracking()
+        self.detector = ObjectDetector()
+        self.tracker = ObjectTracker()
 
 
-    def predict(self, frame):
-        return self.Detection.predict(frame) 
+    def track(self, frame):
+        self.detector.predict(frame)
+        #return self.tracker.predict(frame, detections)
+
+    # Function that draws the bounding boxes on the frame
+    def draw_bounding_boxes(self, frame, detections):
+        for detection in detections:
+            xmin = detection[0]
+            ymin = detection[1]
+            xmax = detection[2]
+            ymax = detection[3]
+            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+        return frame
