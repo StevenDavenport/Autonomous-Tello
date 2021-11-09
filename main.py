@@ -1,5 +1,5 @@
 from drone.drone import DroneController
-from userTracking.userTracking import UserTracking
+from userTracking.userTracking import UserTracker
 import cv2
 import time
 
@@ -13,7 +13,7 @@ def main():
     drone.connect()
 
     # Create user tracking object
-    tracker = UserTracking()
+    tracker = UserTracker()
 
     # Video loop
     while True:
@@ -24,7 +24,7 @@ def main():
         frame = drone.get_frame()
 
         # Object detection on the frame
-        tracked_frame = tracker.track(frame)
+        tracker.track(frame)
         
         # FPS Calculations & Display
         fps = 1.0 / (time.time() - start_time)
