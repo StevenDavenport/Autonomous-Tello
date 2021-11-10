@@ -1,3 +1,4 @@
-okay, obj detection looking good
-
-lets go deepsort
+write UserTracker.process_detections() so it's perfect
+    - move to object detection class
+    - return to user tracking a nice format
+    - look into not using the pandas() function. may be shit. 

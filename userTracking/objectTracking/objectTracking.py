@@ -1,96 +1,87 @@
-import numpy as np
-
-from .deep.feature_extractor import Extractor
-from .sort.nn_matching import NearestNeighborDistanceMetric
-from .sort.preprocessing import non_max_suppression
-from .sort.detection import Detection
-from .sort.tracker import Tracker
-
+# Object tracker that uses SORT to multiple objects in a frame.
 class ObjectTracker:
-    def __init__(self) -> None:
-        def __init__(self, model_path, max_dist=0.2, use_cuda=True):
-            self.min_confidence = 0.3
-            self.nms_max_overlap = 1.0
+    def __init__(self,
+                 maxObjects=20,
+                 max_age=5,
+                 min_hits=3,
+                 iou_threshold=0.3,
+                 score_threshold=0.3):
+        # Initialize variables
+        self.maxObjects = maxObjects
+        self.max_age = max_age
+        self.min_hits = min_hits
+        self.iou_threshold = iou_threshold
+        self.score_threshold = score_threshold
+        self.trackers = []
+        self.frame_count = 0
 
-            self.extractor = Extractor(model_path, use_cuda=use_cuda)
+    def track(self, objects, frame_number=1):
+        # Update trackers
+        self.frame_count += 1
+        # For each new object
+        for new_object in objects:
+            # If new object is not already tracked
+            if len(self.trackers) < self.maxObjects:
+                # Add new tracker
+                self.trackers.append(Tracker(new_object, self.frame_count))
+            else:
+                # Find tracker with highest iou
+                highest_iou = 0
+                highest_iou_index = 0
+                for i, tracker in enumerate(self.trackers):
+                    # Compute iou
+                    iou = tracker.iou(new_object)
+                    # Update tracker if iou is higher
+                    if iou > highest_iou:
+                        highest_iou = iou
+                        highest_iou_index = i
+                # If iou is high enough
+                if highest_iou > self.iou_threshold:
+                    # Update tracker
+                    self.trackers[highest_iou_index].update(new_object, self.frame_count)
+                # If iou is not high enough
+                else:
+                    # Add new tracker
+                    self.trackers.append(Tracker(new_object, self.frame_count))
+        # Remove old trackers
+        for i, tracker in enumerate(self.trackers):
+            # If tracker is old
+            if tracker.age > self.max_age or tracker.hits < self.min_hits:
+                # Remove tracker
+                self.trackers.pop(i)
+        # Return trackers
+        return self.trackers
 
-            max_cosine_distance = max_dist
-            nn_budget = 100
-            metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-            self.tracker = Tracker(metric)
+        
 
-    def update(self, bbox_xywh, confidences, ori_img):
-        self.height, self.width = ori_img.shape[:2]
-        # generate detections
-        features = self._get_features(bbox_xywh, ori_img)
-        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
-        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
-
-        # run on non-maximum supression
-        boxes = np.array([d.tlwh for d in detections])
-        scores = np.array([d.confidence for d in detections])
-        indices = non_max_suppression( boxes, self.nms_max_overlap, scores)
-        detections = [detections[i] for i in indices]
-
-        # update tracker
-        self.tracker.predict()
-        self.tracker.update(detections)
-
-        # output bbox identities
-        outputs = []
-        for track in self.tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:
-                continue
-            box = track.to_tlwh()
-            x1,y1,x2,y2 = self._tlwh_to_xyxy(box)
-            track_id = track.track_id
-            outputs.append(np.array([x1,y1,x2,y2,track_id], dtype=np.int))
-        if len(outputs) > 0:
-            outputs = np.stack(outputs,axis=0)
-        return outputs
-
-
-    """
-    TODO:
-        Convert bbox from xc_yc_w_h to xtl_ytl_w_h
-    Thanks JieChen91@github.com for reporting this bug!
-    """
-    @staticmethod
-    def _xywh_to_tlwh(bbox_xywh):
-        bbox_xywh[:,0] = bbox_xywh[:,0] - bbox_xywh[:,2]/2.
-        bbox_xywh[:,1] = bbox_xywh[:,1] - bbox_xywh[:,3]/2.
-        return bbox_xywh
-
-
-    def _xywh_to_xyxy(self, bbox_xywh):
-        x,y,w,h = bbox_xywh
-        x1 = max(int(x-w/2),0)
-        x2 = min(int(x+w/2),self.width-1)
-        y1 = max(int(y-h/2),0)
-        y2 = min(int(y+h/2),self.height-1)
-        return x1,y1,x2,y2
-
-    def _tlwh_to_xyxy(self, bbox_tlwh):
-        """
-        TODO:
-            Convert bbox from xtl_ytl_w_h to xc_yc_w_h
-        Thanks JieChen91@github.com for reporting this bug!
-        """
-        x,y,w,h = bbox_tlwh
-        x1 = max(int(x),0)
-        x2 = min(int(x+w),self.width-1)
-        y1 = max(int(y),0)
-        y2 = min(int(y+h),self.height-1)
-        return x1,y1,x2,y2
     
-    def _get_features(self, bbox_xywh, ori_img):
-        im_crops = []
-        for box in bbox_xywh:
-            x1,y1,x2,y2 = self._xywh_to_xyxy(box)
-            im = ori_img[y1:y2,x1:x2]
-            im_crops.append(im)
-        if im_crops:
-            features = self.extractor(im_crops)
-        else:
-            features = np.array([])
-        return features
+class Tracker:
+    def __init__(self, object, frame_number):
+        # Initialize variables
+        self.object = object
+        self.frame_number = frame_number
+        self.age = 0
+        self.hits = 0
+        self.score = 0
+        self.matched = False
+
+    def update(self, object, frame_number):
+        # Update variables
+        self.object = object
+        self.frame_number = frame_number
+        self.age = 0
+        self.hits += 1
+        self.score = 0
+        self.matched = False
+
+    def iou(self, object):
+        # Compute iou
+        x1 = max(self.object.x, object.x)
+        y1 = max(self.object.y, object.y)
+        x2 = min(self.object.x + self.object.w, object.x + object.w)
+        y2 = min(self.object.y + self.object.h, object.y + object.h)
+        intersection = max(0, x2 - x1) * max(0, y2 - y1)
+        union = self.object.w * self.object.h + object.w * object.h - intersection
+        return intersection / union
+
+
