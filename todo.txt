@@ -1,4 +1,7 @@
-write UserTracker.process_detections() so it's perfect
-    - move to object detection class
-    - return to user tracking a nice format
-    - look into not using the pandas() function. may be shit. 
+- rename userTracking to ObjectTracking
+- rename ObjectDetection to Yolov5 (perhaps perams of what model should be used - if so alter code)
+- rename Objecttracking to DeepSORT (perhaps params of what type of object tracking to be used)
+
+
+
+- research and make a start wirth SORT/DeepSORT

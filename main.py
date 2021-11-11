@@ -7,10 +7,14 @@ import time
 # Main function which connects the modules and drives the program
 def main():
 
+    # Testing flag
+    testing = True
+
     # Create drone control object
     # Connect it to the physical drone
-    drone = DroneController()
-    drone.connect()
+    if not testing:
+        drone = DroneController()
+        drone.connect()
 
     # Create user tracking object
     tracker = UserTracker()
@@ -20,8 +24,12 @@ def main():
         # FPS Calculations
         start_time = time.time()
 
-        # Get the frame from tello -> transform
-        frame = drone.get_frame()
+        # Get the frame from tello or test image -> transform
+        if testing:
+            frame = cv2.imread('test_data/test_image.jpg')
+            frame = cv2.resize(frame, (0, 0), fx=0.33, fy=0.33)
+        else:
+            frame = drone.get_frame()
 
         # Object detection on the frame
         tracker.track(frame)
