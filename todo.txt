@@ -1,1 +1,2 @@
 - research and make a start wirth SORT/DeepSORT
+- Do it need non maximum supression? or is it already being done?

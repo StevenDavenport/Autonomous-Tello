@@ -7,8 +7,9 @@ import time
 # Main function which connects the modules and drives the program
 def main():
 
-    # Testing flag
-    testing = True
+    # Testing
+    testing = True 
+    test_data_path = 'test_data/test_image.jpg'
 
     # Create drone control object
     # Connect it to the physical drone
@@ -26,7 +27,7 @@ def main():
 
         # Get the frame from tello or test image -> transform
         if testing:
-            frame = cv2.imread('test_data/test_image.jpg')
+            frame = cv2.imread(test_data_path)
             frame = cv2.resize(frame, (0, 0), fx=0.33, fy=0.33)
         else:
             frame = drone.get_frame()
