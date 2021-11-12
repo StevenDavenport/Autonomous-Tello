@@ -1,5 +1,5 @@
 from drone.drone import DroneController
-from userTracking.userTracking import UserTracker
+from objectTracking.tracking import ObjectTracker
 import cv2
 import time
 
@@ -17,7 +17,7 @@ def main():
         drone.connect()
 
     # Create user tracking object
-    tracker = UserTracker()
+    tracker = ObjectTracker()
 
     # Video loop
     while True:

@@ -1,14 +1,14 @@
-from userTracking.objectDetection.objectDetection import ObjectDetector
-from userTracking.objectTracking.objectTracking import ObjectTracker
+from .objectDetection.yolo import YOLOv5
+from .objectTracking.deepsort import DeepSORT
 
 import cv2
 import numpy as np
 
 
-class UserTracker:
+class ObjectTracker:
     def __init__(self) -> None:
-        self.detector = ObjectDetector()
-        self.tracker = ObjectTracker()
+        self.detector = YOLOv5('yolov5s')
+        self.tracker = DeepSORT()
         self.label_colours = {}
         self.object_labels = []
         self.object_locations = []

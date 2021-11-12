@@ -1,7 +1,1 @@
-- rename userTracking to ObjectTracking
-- rename ObjectDetection to Yolov5 (perhaps perams of what model should be used - if so alter code)
-- rename Objecttracking to DeepSORT (perhaps params of what type of object tracking to be used)
-
-
-
 - research and make a start wirth SORT/DeepSORT
