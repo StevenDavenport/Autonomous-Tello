@@ -18,15 +18,16 @@ class ObjectTracker:
         #self.object_labels, self.object_scores, self.object_locations = self.detector.predict(frame)
         detections = self.detector.predict(frame)
         tracked_detections = self.tracker.track(detections, frame)
-        self.draw_boxes_on_frame(frame)
+        return self.draw_boxes(frame, tracked_detections)
 
-    # Function that draws the bounding boxes, labels and scores on frame
-    # Will need to be changed when object tracking is implemented
-    def draw_boxes_on_frame(self, frame):
-        for label, score, loc in zip(self.object_labels, self.object_scores, self.object_locations):
-            frame = cv2.rectangle(frame, (loc[0], loc[1]), (loc[2], loc[3]), self.box_colour_picker(label), 2)
-            label = '{}: {:.2f}'.format(label, score)
-            frame = cv2.putText(frame, label, (loc[0], loc[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+    # Draws tracked detections on frame
+    def draw_boxes(self, frame, tracked_detections):
+        for detection in tracked_detections:
+            frame = cv2.rectangle(frame, (detection['location'][0], detection['location'][1]), (detection['location'][2], detection['location'][3]), self.box_colour_picker(detection['class_label']), 2)
+            label = '#{} - {}'.format(detection['object_identity'], detection['class_label'])
+            frame = cv2.putText(frame, label, (detection['location'][0], detection['location'][1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        return frame
+
 
     # Function that randomly picks a colour for each label detected
     def box_colour_picker(self, label):
