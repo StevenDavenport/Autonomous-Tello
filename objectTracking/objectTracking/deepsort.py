@@ -1,16 +1,22 @@
 from deep_sort_realtime.deepsort_tracker import DeepSort
-from numpy.core.numeric import identity
 
 class DeepSORT:
     def __init__(self):
         self.tracker = DeepSort(max_age=30, nn_budget=70, override_track_class=None)
         
-    def track(self, detections, frame):
+    def track(self, detections, frame, only_people=True):
         processed_detections = self.preprocess_detections(detections)
-        tracks = self.tracker.update_tracks(raw_detections=processed_detections, frame=frame)
-        formatted_detections = self.format_detections(tracks, processed_detections)
+        ready_detections = self.remove_unwanted_detections(processed_detections, only_people)
+        tracks = self.tracker.update_tracks(raw_detections=ready_detections, frame=frame)
+        formatted_detections = self.format_detections(tracks, ready_detections)
         return formatted_detections
 
+    def remove_unwanted_detections(self, detections, only_people):  
+        if only_people:
+            ready_detections = [d for d in detections if d[2] == 'person']
+            return ready_detections
+        return detections
+        
     def preprocess_detections(self, detections):
         '''
         Need below format

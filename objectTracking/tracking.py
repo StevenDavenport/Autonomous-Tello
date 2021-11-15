@@ -15,7 +15,6 @@ class ObjectTracker:
         self.object_scores = []
 
     def track(self, frame):
-        #self.object_labels, self.object_scores, self.object_locations = self.detector.predict(frame)
         detections = self.detector.predict(frame)
         tracked_detections = self.tracker.track(detections, frame)
         return self.draw_boxes(frame, tracked_detections)
@@ -27,7 +26,6 @@ class ObjectTracker:
             label = '#{} - {}'.format(detection['object_identity'], detection['class_label'])
             frame = cv2.putText(frame, label, (detection['location'][0], detection['location'][1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         return frame
-
 
     # Function that randomly picks a colour for each label detected
     def box_colour_picker(self, label):

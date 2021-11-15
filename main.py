@@ -8,7 +8,7 @@ import time
 def main():
 
     # Testing
-    testing = True 
+    testing = False 
     test_data_path = 'test_data/test_image.jpg'
 
     # Create drone control object
