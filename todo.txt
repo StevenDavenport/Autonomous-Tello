@@ -1,2 +1,3 @@
-- research and make a start wirth SORT/DeepSORT
-- Do it need non maximum supression? or is it already being done?
+- investigate DeepSort -> self.tracker.update_tracks(detections, frame)
+    - what does it return?
+    - read into it etc

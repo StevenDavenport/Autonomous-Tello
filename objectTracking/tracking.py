@@ -15,8 +15,9 @@ class ObjectTracker:
         self.object_scores = []
 
     def track(self, frame):
-        self.object_labels, self.object_scores, self.object_locations = self.detector.predict(frame)
-        #tracked_detections = self.tracker.track(detections)
+        #self.object_labels, self.object_scores, self.object_locations = self.detector.predict(frame)
+        detections = self.detector.predict(frame)
+        tracked_detections = self.tracker.track(detections, frame)
         self.draw_boxes_on_frame(frame)
 
     # Function that draws the bounding boxes, labels and scores on frame
