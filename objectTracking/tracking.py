@@ -17,7 +17,7 @@ class ObjectTracker:
     def track(self, frame):
         detections = self.detector.predict(frame)
         tracked_detections = self.tracker.track(detections, frame)
-        return self.draw_boxes(frame, tracked_detections)
+        return tracked_detections, self.draw_boxes(frame, tracked_detections)
 
     # Draws tracked detections on frame
     def draw_boxes(self, frame, tracked_detections):

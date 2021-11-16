@@ -1,3 +1,13 @@
-- investigate DeepSort -> self.tracker.update_tracks(detections, frame)
-    - what does it return?
-    - read into it etc
+drone class -> lets goooo
+
+
+
+
+
+future ->
+    -  clean everything up
+    -  make illustrator class (all the drawing stuff)
+    -  making a class for tracking_data 
+        - dictionary is good for now but may not be scalable
+    -  seperate drone into drone and autopilot
+    -  get args from command line working (choose options for multiple algorithms)

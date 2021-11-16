@@ -33,7 +33,11 @@ def main():
             frame = drone.get_frame()
 
         # Object detection on the frame
-        tracked_frame = tracker.track(frame)
+        tracked_frame, tracking_data = tracker.track(frame)
+
+        # Move the drone in relation to the user
+        if not testing:
+            drone.navigate(tracking_data, tracked_frame)
         
         # FPS Calculations & Display
         fps = 1.0 / (time.time() - start_time)
