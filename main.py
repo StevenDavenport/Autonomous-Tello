@@ -20,6 +20,7 @@ def main():
     drone = DroneController()
     if not testing:
         drone.connect()
+        drone.takeoff()
 
     # Create user tracking object
     tracker = ObjectTracker()
