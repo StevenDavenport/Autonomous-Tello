@@ -1,7 +1,8 @@
 from drone.drone import DroneController
 from objectTracking.tracking import ObjectTracker
+from illustrator import Illustrator
+
 import cv2
-import time
 
 
 # Main function which connects the modules and drives the program
@@ -10,6 +11,9 @@ def main():
     # Testing
     testing = True
     test_data_path = 'test_data/person.jpeg'
+
+    # Create Illustrator object
+    illustrator = Illustrator()
 
     # Create drone control object
     # Connect it to the physical drone
@@ -23,7 +27,7 @@ def main():
     # Video loop
     while True:
         # FPS Calculations
-        start_time = time.time()
+        illustrator.start_clock()
 
         # Get the frame from tello or test image -> transform
         if testing:
@@ -36,13 +40,12 @@ def main():
         tracking_data, tracked_frame = tracker.track(frame)
 
         # Move the drone in relation to the user
-        drone.navigate(tracking_data, tracked_frame)
+        drone_velocity = drone.navigate(tracking_data, tracked_frame)
         
         # FPS Calculations & Display
-        fps = 1.0 / (time.time() - start_time)
-        fps_string = 'FPS: ' + str(int(fps))
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(tracked_frame, fps_string, (800, 80), font, 1, (0, 102, 34), 2, cv2.LINE_AA)
+        illustrator.calculate_fps()
+        battery_level = drone.get_battery_level() if not testing else 100
+        illustrator.draw(tracking_data, tracked_frame, drone_velocity, battery_level)
 
         # Display Frame 
         cv2.imshow('Drone Vision', frame)

@@ -127,13 +127,14 @@ class DroneController:
             -Which is calculated by self.calculate_z_adjustment().
             -The velocity is adjusted by self.momentum.
         '''
-        if self.momentum > self.momentum_threshold:
-            self.velocity[1] = -self.standard_z_speed
-        elif self.momentum < -self.momentum_threshold:
-            self.velocity[1] = self.standard_z_speed
-        #else:
-            #self.velocity[1] = 0
-            #self.momentum = 0
+        if self.velocity[1] == 0:
+            if self.momentum > self.momentum_threshold:
+                self.velocity[1] = -self.standard_z_speed
+            elif self.momentum < -self.momentum_threshold:
+                self.velocity[1] = self.standard_z_speed
+            else:
+                self.velocity[1] = 0
+                self.momentum = 0
 
     def calculate_yaw_adjustment(self, user_location, frame):
         '''
