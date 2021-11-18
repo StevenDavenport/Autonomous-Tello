@@ -8,7 +8,7 @@ class DepthEstimation:
 
 def test():
     md = monodepth2()
-    path = 'depthEstimation/test_image.jpg'
+    path = 'depthEstimation/person.jpeg'
     frame = cv2.imread(path)
     frame = cv2.resize(frame, (0, 0), fx=0.33, fy=0.33)
     while True:
