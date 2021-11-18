@@ -48,8 +48,7 @@ def main():
         battery_level = drone.get_battery_level() if not testing else 100
         illustrator.draw(tracking_data, tracked_frame, drone_velocity, battery_level)
 
-        # Display Frame 
-        cv2.imshow('Drone Vision', frame)
+        # Display Frame and wait for key press  
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     

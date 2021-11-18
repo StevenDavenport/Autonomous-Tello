@@ -25,6 +25,7 @@ class Illustrator:
         cv2.putText(frame, z_velocity_string, (40, 40), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
         yaw_velocity_string = 'YAW VELOCITY: ' + str(drone_velocity[2])
         cv2.putText(frame, yaw_velocity_string, (40, 80), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
+        cv2.imshow('Drone Vision', frame)
 
     # Draws tracked detections on frame
     def draw_boxes(self, frame, tracked_detections):
