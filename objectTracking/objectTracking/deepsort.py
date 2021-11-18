@@ -47,7 +47,7 @@ class DeepSORT:
             tracked_detections.append(dict(
                 class_label=detection[2],
                 confidence_score=detection[1],
-                object_identity=track.track_id,
+                tracking_id=track.track_id,
                 location=[int(tloc[0]), int(tloc[1]), int(tloc[2]), int(tloc[3])]
             ))
         return tracked_detections

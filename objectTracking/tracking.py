@@ -23,7 +23,7 @@ class ObjectTracker:
     def draw_boxes(self, frame, tracked_detections):
         for detection in tracked_detections:
             frame = cv2.rectangle(frame, (detection['location'][0], detection['location'][1]), (detection['location'][2], detection['location'][3]), self.box_colour_picker(detection['class_label']), 2)
-            label = '#{} - {}'.format(detection['object_identity'], detection['class_label'])
+            label = '#{} - {}'.format(detection['tracking_id'], detection['class_label'])
             frame = cv2.putText(frame, label, (detection['location'][0], detection['location'][1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         return frame
 

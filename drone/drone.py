@@ -10,7 +10,7 @@ class DroneController:
     def __init__(self) -> None:
         self.tello = Tello()
         self.frame_size = tuple()
-        self.user_track_id = int()
+        self.user_track_id = -1
         self.forget_user_threshold = 300
         self.velocity = [0, 0, 0, 0]
         self.standard_z_speed = 30
@@ -47,15 +47,17 @@ class DroneController:
     # Function that decides on how the drone will move
     # to follow the user
     def navigate(self, tracking_data, frame):
+        if len(tracking_data) == 0:
+            self.adjust_position()
         # Should the user be forgotten?
         self.should_forget_user(tracking_data)
         # If there is a user, track them
         # If not, get a new user and track them
         for track in tracking_data:
             if track['tracking_id'] == self.user_track_id or self.user_track_id == -1:
-                required_adjustments = self.calculate_positional_adjustments(track['location'])
-                adjustments = self.adjust_position(required_adjustments)
-                return adjustments
+                self.calculate_positional_adjustments(track['location'], frame)
+                self.adjust_position()
+                return self.velocity
 
     # Function that calculates wehther the user should be forgotten
     def should_forget_user(self, tracking_data):
@@ -72,10 +74,10 @@ class DroneController:
 
 
     # Function that adjusts the postion of the drone in relation to the user
-    def calculate_positional_adjustments(self, user_location):
-        self.calculate_z_adjustment(user_location)
+    def calculate_positional_adjustments(self, user_location, frame):
+        self.calculate_z_adjustment(user_location, frame)
         self.calculate_braking(user_location)
-        self.calculate_yaw_adjustment(user_location)
+        self.calculate_yaw_adjustment(user_location, frame)
 
 
     def calculate_z_adjustment(self, user_location, frame):
@@ -129,9 +131,9 @@ class DroneController:
             self.velocity[1] = -self.standard_z_speed
         elif self.momentum < -self.momentum_threshold:
             self.velocity[1] = self.standard_z_speed
-        else:
-            self.velocity[1] = 0
-            self.momentum = 0
+        #else:
+            #self.velocity[1] = 0
+            #self.momentum = 0
 
     def calculate_yaw_adjustment(self, user_location, frame):
         '''
@@ -160,13 +162,13 @@ class DroneController:
         else:
             self.velocity[3] = 0
 
-    def adjust_position(self):
+    def adjust_position(self, required_adjustments=None):
         '''
         Algorithm:
             -The calculated velocity adjustments is send as a command to the drone.
             -Velocity = [x, z, y, yaw]
         '''
-        self.tello.send_rc_control(self.velocity[0], self.velocity[1], self.velocity[2], self.velocity[3])
+        self.tello.send_rc_control(int(self.velocity[0]), int(self.velocity[1]), int(self.velocity[2]), int(self.velocity[3]))
 
     def takeoff(self):
         '''

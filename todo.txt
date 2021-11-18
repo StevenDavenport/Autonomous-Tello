@@ -1,9 +1,11 @@
-drone class -> lets goooo
+1.0
+test drone class->
+    - Must follow user
+    - Must record user to a directory and not overwrite
+    - Introduce verticallity controls
+        - Test
 
-
-
-
-
+2.0
 future ->
     -  clean everything up
     -  make illustrator class (all the drawing stuff)
@@ -11,3 +13,11 @@ future ->
         - dictionary is good for now but may not be scalable
     -  seperate drone into drone and autopilot
     -  get args from command line working (choose options for multiple algorithms)
+
+3.0
+pypi monodepth2 package->
+    -   make a test enviroment for it 
+    -   then test it with the drone feed
+    -   Depending on how testing goes, 
+        - Decide on implimentation
+

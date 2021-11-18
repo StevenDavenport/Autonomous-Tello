@@ -8,13 +8,13 @@ import time
 def main():
 
     # Testing
-    testing = False 
-    test_data_path = 'test_data/test_image.jpg'
+    testing = True
+    test_data_path = 'test_data/person.jpeg'
 
     # Create drone control object
     # Connect it to the physical drone
+    drone = DroneController()
     if not testing:
-        drone = DroneController()
         drone.connect()
 
     # Create user tracking object
@@ -28,16 +28,15 @@ def main():
         # Get the frame from tello or test image -> transform
         if testing:
             frame = cv2.imread(test_data_path)
-            frame = cv2.resize(frame, (0, 0), fx=0.33, fy=0.33)
+            #frame = cv2.resize(frame, (0, 0), fx=0.33, fy=0.33)
         else:
             frame = drone.get_frame()
 
-        # Object detection on the frame
-        tracked_frame, tracking_data = tracker.track(frame)
+        # Track the user
+        tracking_data, tracked_frame = tracker.track(frame)
 
         # Move the drone in relation to the user
-        if not testing:
-            drone.navigate(tracking_data, tracked_frame)
+        drone.navigate(tracking_data, tracked_frame)
         
         # FPS Calculations & Display
         fps = 1.0 / (time.time() - start_time)
