@@ -57,7 +57,8 @@ class DroneController:
             if track['tracking_id'] == self.user_track_id or self.user_track_id == -1:
                 self.calculate_positional_adjustments(track['location'], frame)
                 self.adjust_position()
-                return self.velocity
+                break
+        return self.velocity
 
     # Function that calculates wehther the user should be forgotten
     def should_forget_user(self, tracking_data):
@@ -150,16 +151,16 @@ class DroneController:
         turn_slow_threshold = 150
         # Turn right fast
         if x_vector > turn_fast_threshold:
-            self.velocity[3] = self.fast_yaw_speed
+            self.velocity[3] = -self.fast_yaw_speed
         #Turn right slow
         elif x_vector > turn_slow_threshold:
-            self.velocity[3] = self.standard_yaw_speed
+            self.velocity[3] = -self.standard_yaw_speed
         # Turn left fast
         elif x_vector < -turn_fast_threshold:
-            self.velocity[3] = -self.fast_yaw_speed
+            self.velocity[3] = self.fast_yaw_speed
         # Turn left slow
         elif x_vector < -turn_slow_threshold:
-            self.velocity[3] = -self.standard_yaw_speed
+            self.velocity[3] = self.standard_yaw_speed
         else:
             self.velocity[3] = 0
 

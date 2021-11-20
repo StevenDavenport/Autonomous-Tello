@@ -9,11 +9,15 @@ import cv2
 def main():
 
     # Testing
-    testing = True
+    testing = False
     test_data_path = 'test_data/person.jpeg'
 
     # Create Illustrator object
     illustrator = Illustrator()
+
+
+    # Create user tracking object
+    tracker = ObjectTracker()
 
     # Create drone control object
     # Connect it to the physical drone
@@ -21,9 +25,6 @@ def main():
     if not testing:
         drone.connect()
         drone.takeoff()
-
-    # Create user tracking object
-    tracker = ObjectTracker()
 
     # Video loop
     while True:
@@ -45,7 +46,7 @@ def main():
         
         # FPS Calculations & Display
         illustrator.calculate_fps()
-        battery_level = drone.get_battery_level() if not testing else 100
+        battery_level = drone.get_battery() if not testing else 100
         illustrator.draw(tracking_data, tracked_frame, drone_velocity, battery_level)
 
         # Display Frame and wait for key press  

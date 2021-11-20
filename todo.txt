@@ -1,6 +1,6 @@
 1.0
 test drone class->
-    - Must follow user
+    - Must follow user (MOVEMENT DOES'T WORK CORRECTLY) ----> little bit fixed, more testing needed
     - Must record user to a directory and not overwrite
     - Introduce verticallity controls
         - Test

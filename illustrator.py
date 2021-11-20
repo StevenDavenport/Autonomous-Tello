@@ -23,7 +23,7 @@ class Illustrator:
         cv2.putText(frame, fps_string, (800, 80), font, 1, (0, 102, 34), 2, cv2.LINE_AA)
         z_velocity_string = 'Z VELOCITY: ' + str(drone_velocity[1])
         cv2.putText(frame, z_velocity_string, (40, 40), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
-        yaw_velocity_string = 'YAW VELOCITY: ' + str(drone_velocity[2])
+        yaw_velocity_string = 'YAW VELOCITY: ' + str(drone_velocity[3])
         cv2.putText(frame, yaw_velocity_string, (40, 80), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
         cv2.imshow('Drone Vision', frame)
 
