@@ -14,7 +14,7 @@ class Illustrator:
     def calculate_fps(self):
         self.fps = 1.0 / (time.time() - self.start_time)
 
-    def draw(self, object_data, frame, drone_velocity, battery_level):
+    def draw(self, object_data, frame, drone_velocity, battery_level, braking=False):
         self.draw_boxes(frame, object_data)
         font = cv2.FONT_HERSHEY_SIMPLEX
         battery_string = 'BATTERY: ' + str(battery_level)
@@ -25,6 +25,8 @@ class Illustrator:
         cv2.putText(frame, z_velocity_string, (40, 40), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
         yaw_velocity_string = 'YAW VELOCITY: ' + str(drone_velocity[3])
         cv2.putText(frame, yaw_velocity_string, (40, 80), font, 1, (0, 0, 153), 2, cv2.LINE_AA)
+        if braking:
+            cv2.putText(frame, 'Braking', (40, 120), font, 3, (0, 0, 153), 2, cv2.LINE_AA)
         cv2.imshow('Drone Vision', frame)
 
     # Draws tracked detections on frame
@@ -40,3 +42,12 @@ class Illustrator:
         if self.label_colours.get(label) is None:
             self.label_colours[label] = np.random.randint(0, 255, (3,)).tolist()
         return self.label_colours[label]
+
+    def check_done(self):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            return True
+        else:
+            return False
+
+    def close(self):
+        cv2.destroyAllWindows()

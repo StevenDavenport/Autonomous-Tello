@@ -1,6 +1,6 @@
 1.0
 test drone class->
-    - Must follow user (MOVEMENT DOES'T WORK CORRECTLY) ----> little bit fixed, more testing needed
+    - Must follow user (MOVEMENT DOES'T WORK CORRECTLY) ----> looking better
     - Must record user to a directory and not overwrite
     - Introduce verticallity controls
         - Test
@@ -11,7 +11,7 @@ future ->
     -  make illustrator class (all the drawing stuff)
     -  making a class for tracking_data 
         - dictionary is good for now but may not be scalable
-    -  seperate drone into drone and autopilot
+    -  Make Controllor folder containing controller, drone, and autopilot classes.
     -  get args from command line working (choose options for multiple algorithms)
 
 3.0
@@ -20,4 +20,9 @@ pypi monodepth2 package->
     -   then test it with the drone feed
     -   Depending on how testing goes, 
         - Decide on implimentation
+
+4.0
+Look into speach to text
+    -   Then add it to the controllor folder
+        -   Voice controls for drone
 

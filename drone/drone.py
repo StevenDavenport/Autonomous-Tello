@@ -13,10 +13,11 @@ class DroneController:
         self.user_track_id = -1
         self.forget_user_threshold = 300
         self.velocity = [0, 0, 0, 0]
-        self.standard_z_speed = 30
-        self.fast_z_speed = 100
+        self.speed = 30
+        self.standard_z_speed = self.speed
+        self.fast_z_speed = int(self.speed * 4)
         self.standard_yaw_speed = 40
-        self.fast_yaw_speed = 100
+        self.fast_yaw_speed = int(self.standard_yaw_speed * 2)
         self.momentum = 0
         self.momentum_threshold = 30
         self.video_thread = Thread(target=self.record_video)
@@ -53,12 +54,13 @@ class DroneController:
         self.should_forget_user(tracking_data)
         # If there is a user, track them
         # If not, get a new user and track them
+        braking = False
         for track in tracking_data:
             if track['tracking_id'] == self.user_track_id or self.user_track_id == -1:
-                self.calculate_positional_adjustments(track['location'], frame)
+                braking = self.calculate_positional_adjustments(track['location'], frame)
                 self.adjust_position()
                 break
-        return self.velocity
+        return self.velocity, braking
 
     # Function that calculates wehther the user should be forgotten
     def should_forget_user(self, tracking_data):
@@ -77,8 +79,8 @@ class DroneController:
     # Function that adjusts the postion of the drone in relation to the user
     def calculate_positional_adjustments(self, user_location, frame):
         self.calculate_z_adjustment(user_location, frame)
-        self.calculate_braking(user_location)
         self.calculate_yaw_adjustment(user_location, frame)
+        return self.calculate_braking()
 
 
     def calculate_z_adjustment(self, user_location, frame):
@@ -120,8 +122,11 @@ class DroneController:
                 self.momentum -= 1
             else:
                 self.momentum = 0
+        # No movement required
+        else:
+            self.velocity[1] = 0
         
-    def calculate_braking(self, user_location):
+    def calculate_braking(self):
         '''
         Algotithm:
             -Breaking is calculated using self.momentum.
@@ -129,13 +134,11 @@ class DroneController:
             -The velocity is adjusted by self.momentum.
         '''
         if self.velocity[1] == 0:
-            if self.momentum > self.momentum_threshold:
-                self.velocity[1] = -self.standard_z_speed
-            elif self.momentum < -self.momentum_threshold:
-                self.velocity[1] = self.standard_z_speed
-            else:
-                self.velocity[1] = 0
+            if self.momentum > self.momentum_threshold \
+                or self.momentum < -self.momentum_threshold:
+                self.velocity[1] = -self.velocity[1]
                 self.momentum = 0
+                return True
 
     def calculate_yaw_adjustment(self, user_location, frame):
         '''
@@ -184,7 +187,13 @@ class DroneController:
         '''
         self.tello.land()
 
-    def start_video_thread(self):
+    def shutdown(self):
+        '''
+        Sends the command to the drone to shutdown.
+        '''
+        self.tello.end()
+
+    def record(self):
         '''
         Starts the thread which the video capture will use.
         '''
