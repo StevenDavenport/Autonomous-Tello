@@ -1,232 +1,127 @@
-# Python package that comminicates with the DJI tello drone
+from .autopilot import AutoPilot
 from djitellopy import Tello 
 from threading import Thread
 import os
 import cv2
 import time
+import datetime
 
 
 class DroneController:
     def __init__(self) -> None:
-        self.tello = Tello()
-        self.frame_size = tuple()
-        self.user_track_id = -1
-        self.forget_user_threshold = 300
-        self.velocity = [0, 0, 0, 0]
-        self.speed = 30
-        self.standard_z_speed = self.speed
-        self.fast_z_speed = int(self.speed * 4)
-        self.standard_yaw_speed = 40
-        self.fast_yaw_speed = int(self.standard_yaw_speed * 2)
-        self.momentum = 0
-        self.momentum_threshold = 30
-        self.video_thread = Thread(target=self.record_video)
-        self.video_thread_flag = False
+        self.tello = Tello()                    # Create the Tello object -> communicates with the drone
+        self.pilot = AutoPilot()                # Create the autopilot object -> decides the drone's movement
+        self.frame_height = 720                 # Height of the frame
+        self.frame_width = 960                  # Width of the frame
+        self.video_thread = Thread(target=self.record_video)   # Thread for recording the video
+        self.video_thread_flag = False          # Flag for the video thread
 
-    # Connect the controller to physical tello - optional turn on stream
     def connect(self, streamon=True):
+        '''
+        Connects the controller to the tello drone.
+        Parameters:
+            -streamon: True if the stream should be turned on.
+        Returns: Nothing
+        '''
         self.tello.connect()
         if streamon:
             self.tello.streamoff()
             self.tello.streamon()    
         
-    # Flight test for Tello
-    def test_drone_movement(self):
-        print(self.tello.get_battery())
-        self.tello.takeoff()
-        self.tello.rotate_clockwise(50)
-        self.tello.land()
-
-    # Returns the frame captured by tello
     def get_frame(self):
+        '''
+        Parameters: None
+        Returns: The frame captured by tello
+        '''
         return self.tello.get_frame_read().frame
 
-    # Returns the battery level of tello
     def get_battery(self):
+        '''
+        Parameters: None
+        Returns: The battery level of the drone.
+        '''
         return self.tello.get_battery()
-
-    # Function that decides on how the drone will move
-    # to follow the user
-    def navigate(self, tracking_data, frame):
-        if len(tracking_data) == 0:
-            self.adjust_position()
-        # Should the user be forgotten?
-        self.should_forget_user(tracking_data)
-        # If there is a user, track them
-        # If not, get a new user and track them
-        braking = False
-        for track in tracking_data:
-            if track['tracking_id'] == self.user_track_id or self.user_track_id == -1:
-                braking = self.calculate_positional_adjustments(track['location'], frame)
-                self.adjust_position()
-                break
-        return self.velocity, braking
-
-    # Function that calculates wehther the user should be forgotten
-    def should_forget_user(self, tracking_data):
-        # If there is no user, forget the user
-        if len(tracking_data) == 0:
-            self.user_track_id = -1
-            return
-        # If there is a user, check if it is old
-        for track in tracking_data:
-            if track['tracking_id'] == self.user_track_id:
-                if track['tracking_id'] > self.forget_user_threshold:
-                    self.user_track_id = -1
-                    return
-
-
-    # Function that adjusts the postion of the drone in relation to the user
-    def calculate_positional_adjustments(self, user_location, frame):
-        self.calculate_z_adjustment(user_location, frame)
-        self.calculate_yaw_adjustment(user_location, frame)
-        return self.calculate_braking()
-
-
-    def calculate_z_adjustment(self, user_location, frame):
-        '''
-        Algorithm:
-            -Calculate the area of the users bounding box.
-            -Decide on the action required.
-            -Calculate momentum of the action & previous actions.
-            -The required Z velocity is stored in self.velocity 
-        '''
-        # Required variables
-        bbox_area = abs(user_location[3]-user_location[1]) * abs(user_location[2]-user_location[0])
-        frame_area = frame.shape[0] * frame.shape[1]
-        # Move forward fast
-        if bbox_area < frame_area / 9:
-            self.velocity[1] = self.fast_z_speed
-            if self.momentum >= 0:
-                self.momentum += 4
-            else:
-                self.momentum = 0
-        # Move forward slow
-        elif bbox_area < frame_area / 5:
-            self.velocity[1] = self.standard_z_speed
-            if self.momentum >= 0:
-                self.momentum += 1
-            else:
-                self.momentum = 0
-        # Move backward fast
-        elif bbox_area > frame_area / 2:
-            self.velocity[1] = -self.fast_z_speed / 2
-            if self.momentum <= 0:
-                self.momentum -= 1.5
-            else:
-                self.momentum = 0
-        # Move backward slow
-        elif bbox_area > frame_area / 1.5:
-            self.velocity[1] = -self.standard_z_speed
-            if self.momentum <= 0:
-                self.momentum -= 1
-            else:
-                self.momentum = 0
-        # No movement required
-        else:
-            self.velocity[1] = 0
         
-    def calculate_braking(self):
+    def move(self, tracking_data, frame):
         '''
-        Algotithm:
-            -Breaking is calculated using self.momentum.
-            -Which is calculated by self.calculate_z_adjustment().
-            -The velocity is adjusted by self.momentum.
+        Moves the drone according to the autopilot.
+        Parameters:
+            -tracking_data: The data from the tracking algorithm.
+            -frame: The frame from the video capture.
+        Returns: Nothing
         '''
-        if self.velocity[1] == 0:
-            if self.momentum > self.momentum_threshold \
-                or self.momentum < -self.momentum_threshold:
-                self.velocity[1] = -self.velocity[1]
-                self.momentum = 0
-                return True
-
-    def calculate_yaw_adjustment(self, user_location, frame):
-        '''
-        Algorithm:
-            -X vector is the vector between the center of the users bounding box 
-                and the center of the frame on the x axis.
-            -The size of that vector is used to calculate required yaw adjustment. 
-            -The required yaw adjustment is stored in self.velocity.
-        '''
-        # Required variables
-        x_vector = int(frame.shape[1] / 2) - (user_location[0] + ((user_location[2] - user_location[0]) / 2))
-        turn_fast_threshold = 350
-        turn_slow_threshold = 150
-        # Turn right fast
-        if x_vector > turn_fast_threshold:
-            self.velocity[3] = -self.fast_yaw_speed
-        #Turn right slow
-        elif x_vector > turn_slow_threshold:
-            self.velocity[3] = -self.standard_yaw_speed
-        # Turn left fast
-        elif x_vector < -turn_fast_threshold:
-            self.velocity[3] = self.fast_yaw_speed
-        # Turn left slow
-        elif x_vector < -turn_slow_threshold:
-            self.velocity[3] = self.standard_yaw_speed
-        else:
-            self.velocity[3] = 0
-
-    def adjust_position(self, required_adjustments=None):
-        '''
-        Algorithm:
-            -The calculated velocity adjustments is send as a command to the drone.
-            -Velocity = [x, z, y, yaw]
-        '''
-        self.tello.send_rc_control(int(self.velocity[0]), int(self.velocity[1]), int(self.velocity[2]), int(self.velocity[3]))
+        velocity, braking = self.pilot.navigate(tracking_data, frame)
+        self.tello.send_rc_control(int(velocity[0]), int(velocity[1]), int(velocity[2]), int(velocity[3]))
+        return velocity, braking
 
     def takeoff(self):
         '''
         Sends the command to the drone to takeoff.
+        Parameters: None
+        Returns: Nothing
         '''
         self.tello.takeoff()
 
     def land(self):
         '''
         Sends the command to the drone to land.
+        Parameters: None
+        Returns: Nothing
         '''
         self.tello.land()
 
     def shutdown(self):
         '''
         Sends the command to the drone to shutdown.
+        Parameters: None
+        Returns: Nothing
         '''
         self.tello.end()
 
-    def record(self):
+    def start_recording(self):
         '''
         Starts the thread which the video capture will use.
+        Parameters: None
+        Returns: Nothing
         '''
         if not self.video_thread_flag:
             self.video_thread.start()
             self.video_thread_flag= True
 
-    def join_video_thread(self):
+    def stop_recording(self):
         '''
         Joins the video thread.
+        Parameters: None
+        Returns: Nothing
         '''
         if self.video_thread_flag:
-            self.video_thread.join()
-            self.video_thread_flag = False
+            self.record = False
+            #self.video_thread.join()
+            #self.video_thread_flag = False
     
     def record_video(self):
+        '''
+        Records a video from the drones onboard camera.
+        Saves the vido to './videos/' as a '.avi' file.
+        Parameters: None
+        Returns: Nothing
+        '''
+        date = datetime.datetime.now().strftime("%d-%m-%Y")
+        file_name = 'video_' + str(date) + '_#'
         file_id = 0
         directory = './videos/'
         file_type = '.avi'
         full_directory = ''
-        height, width, _ = self.get_frame().shape
-
-        # find a file name that has not been used
-        while True:
-            if os.path.isfile(directory + str(file_id) + file_type):
+        while True: # find a file name that has not been used
+            if os.path.isfile(directory + file_name + str(file_id) + file_type):
                 file_id += 1
             else:
-                full_directory = directory + str(file_id) + file_type
+                full_directory = directory + file_name + str(file_id) + file_type
                 break
-        video = cv2.VideoWriter(full_directory, cv2.VideoWriter_fourcc(*'XVID'), 30, (width, height))
-
-        # frame loop, get and save the frames
-        while self.record == True: 
-            video.write(self.get_frame())
+        video = cv2.VideoWriter(full_directory, cv2.VideoWriter_fourcc(*'XVID'), 30, (self.frame_width, self.frame_height))
+        while self.record == self. record == True: # record until told to stop
+            frame = self.get_frame()
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            video.write(frame)
             time.sleep(1 / 60)
         video.release()
