@@ -8,6 +8,10 @@ import datetime
 
 
 class DroneController:
+    '''
+    This class is used to control the drone, 
+    as well as get and set drone data. 
+    '''
     def __init__(self) -> None:
         self.tello = Tello()                    # Create the Tello object -> communicates with the drone
         self.pilot = AutoPilot()                # Create the autopilot object -> decides the drone's movement

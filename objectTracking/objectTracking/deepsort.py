@@ -1,10 +1,23 @@
 from deep_sort_realtime.deepsort_tracker import DeepSort
 
 class DeepSORT:
+    '''
+    Simultanious Online Real-time Tracking.
+    + Helper functions and preprocessing.
+    '''
     def __init__(self):
-        self.tracker = DeepSort(max_age=30, nn_budget=70, override_track_class=None)
+        self.tracker = DeepSort(max_age=30, nn_budget=70, override_track_class=None) # Deepsort Tracker
         
     def track(self, detections, frame, only_people=True):
+        '''
+        Tracks objects in frame.
+        Parameters:
+            - detections: list of detections from Object Detection
+            - frame: frame to be tracked
+            - only_people: if True, only tracks people (default: True)
+        Returns:
+            - tracks: list of tracks (in a dictionary format)
+        '''
         processed_detections = self.preprocess_detections(detections)
         ready_detections = self.remove_unwanted_detections(processed_detections, only_people)
         tracks = self.tracker.update_tracks(raw_detections=ready_detections, frame=frame)
@@ -12,6 +25,14 @@ class DeepSORT:
         return formatted_detections
 
     def remove_unwanted_detections(self, detections, only_people):  
+        '''
+        Removes the unwanted objects from the detections.
+        Parameters:
+            - detections: list of detections from Object Detection
+            - only_people: if True, only tracks people (default: True)
+        Returns:
+            - ready_detections/detections: list of detections ready for DeepSort
+        '''
         if only_people:
             ready_detections = [d for d in detections if d[2] == 'person']
             return ready_detections
@@ -19,14 +40,12 @@ class DeepSORT:
         
     def preprocess_detections(self, detections):
         '''
-        Need below format
-        List of detections, each in tuples of ( [left,top,w,h] , confidence, detection_class)
-        left = xmin
-        top = ymin
-        w = xmax - xmin
-        h = ymax - ymin
-        confidence = confidence
-        detection_class = name
+        Preprocesses the detections, ready for DeepSort.
+        Parameters:
+            - detections: list of detections from Object Detection
+        Returns:
+            - detections: ready for DeepSort
+                - ( [left,top,w,h] , confidence, detection_class )
         '''
         detections = detections.pandas().xyxy[0]
         xmins = [float(xmin) for xmin in detections.xmin]
@@ -41,6 +60,14 @@ class DeepSORT:
         return detections
 
     def format_detections(self, tracks, detections):
+        '''
+        Formats the detections and tracks into a dictionary format.
+        Parameters:
+            - tracks: list of tracks (raw format)
+            - detections: list of detections
+        Returns:
+            - formatted_detections: list of detections & tracks in dictionary format
+        '''
         tracked_detections = list()
         for detection, track in zip(detections, tracks):
             tloc = track.to_ltrb()

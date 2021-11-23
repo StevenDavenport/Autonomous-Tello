@@ -1,4 +1,8 @@
 class AutoPilot:
+    '''
+    This class is the logic for adjusting the position of the drone
+    autonomously. 
+    '''
     def __init__(self) -> None:
         self.velocity = [0, 0, 0, 0]        # velocity of the drone [x, z, y, yaw]
         self.user_track_id = -1             # tracking id of the user
