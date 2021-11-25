@@ -150,15 +150,16 @@ class AutoPilot:
             - frame: The frame of the video
         Returns: Nothing - The self.velocity is updated
         '''
-        top_of_bbox = user_location[1]
-        lower_y_threshold = self.height * 0.80
-        upper_y_threshold = self.height * 0.05
-        if top_of_bbox > lower_y_threshold:
-            self.velocity[2] = self.speed / 2
-        elif top_of_bbox < lower_y_threshold and top_of_bbox > upper_y_threshold:
+        lower_y_threshold = self.height * 0.4
+        higher_y_threshold = self.height * 0.01
+        if user_location[1] <= higher_y_threshold:
+            self.velocity[2] = -self.speed
+        elif user_location[1] > higher_y_threshold and \
+            user_location[1] < lower_y_threshold:
             self.velocity[2] = 0
-        elif top_of_bbox < upper_y_threshold:
-            self.velocity[2] = -self.speed / 2
+        elif user_location[1] >= lower_y_threshold:
+            self.velocity[2] = self.speed
+
 
     def should_forget_user(self, tracking_data):
         '''
