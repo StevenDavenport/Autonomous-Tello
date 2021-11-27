@@ -3,7 +3,7 @@ test drone class->
     - Must follow user (MOVEMENT DOES'T WORK CORRECTLY) ----> looking better
     - Must record user to a directory and not overwrite ----> not working, saves the file but file won't open
     - Introduce verticallity controls
-        - Test
+       - Test ->>>>>> further testing needed, does work
 
 2.0
 future ->

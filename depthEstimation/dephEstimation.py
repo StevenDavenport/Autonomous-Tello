@@ -1,10 +1,12 @@
 from monodepth2 import monodepth2
 import cv2
 
-class DepthEstimation:
+class DepthEstimator:
     def __init__(self):
-        pass
+        self.depth_estimator = monodepth2()
 
+    def predict(self, frame):
+        return self.depth_estimator.predict(frame)
 
 def test():
     md = monodepth2()
