@@ -1,5 +1,5 @@
 from .autopilot import AutoPilot
-from djitellopy2 import Tello 
+from djitellopy import Tello 
 from threading import Thread
 import os
 import cv2
