@@ -1,13 +1,18 @@
 import torch
+from ultralytics import YOLO
 
-class YOLOv5:
+class YOLO:
     '''
     This class uses YOLOv5 to detect objects in a frame.
     Other menthods in this class are helper functions.
     '''
-    def __init__(self, model) -> None:
+    def __init__(self, model, version='yolov8') -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # Use GPU if available
-        self.model = torch.hub.load('ultralytics/yolov5', model, pretrained=True).to(self.device).eval() # Loaing weights to GPU
+        if version == 'yolov5':
+            self.model = torch.hub.load('ultralytics/yolov5', model, pretrained=True).to(self.device).eval()
+        elif version == 'yolov8':
+            self.model = YOLO("yolov8n.pt")
+        
 
     def predict(self, frame):
         '''
@@ -23,6 +28,7 @@ class YOLOv5:
         '''
         return self.model(frame)
 
+
     def format_detections(self, detections):
         '''
         Formats the detections, not used - kept for future use.
@@ -37,6 +43,7 @@ class YOLOv5:
         locations = [(xmin, ymin, xmax, ymax) for xmin, ymin, xmax, ymax in zip(xmins, ymins, xmaxs, ymaxs)]
         return labels, scores, locations
 
+
     def inspect_detections(self, object_labels, object_scores, object_locations, detections):
         '''
         Function is used to check what yolo is detecting.
@@ -47,4 +54,5 @@ class YOLOv5:
         print('Object labels: {}'.format(object_labels))
         print('Object confidence scores: {}'.format(object_scores))
         print('Object locations: {}'.format(object_locations))
+
 
